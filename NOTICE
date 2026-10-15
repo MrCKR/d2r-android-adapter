@@ -1,0 +1,77 @@
+# Third-party and derived material
+
+This repository contains material that is not original work. This file records
+where it came from and under what terms.
+
+## 1. Vendored from `jhaizhou-ops/d2r-mobile`
+
+`vendor/d2r-mobile/` is a copy of a subset of
+<https://github.com/jhaizhou-ops/d2r-mobile>, pinned to commit
+`9de307ecaff42b3c9d45e58992c848ee89b8f6a1` (2026-10-15). See
+`vendor/MANIFEST.tsv` for a per-file SHA-256 record.
+
+- Upstream project licence: **MIT**, Copyright (c) 2026 jhaizhou.
+- The vendored files are unmodified; the file list is in
+  `docs/MIGRATION-1.md`.
+- The MIT notice for these files is the upstream one; this repository's own
+  `LICENSE` covers the adapter code written here.
+
+### 1a. A note on the offline-play patch rules
+
+Upstream's `dm/tools/patch_nso.py` contains seven rewrite rules that exist so the
+game can run without a network connection, and upstream states plainly that
+**those seven rules are taken from an existing community offline fix (LFS Mod
+Offline Fix), not their own work**, and that they have no reliable record of
+where it was first published or who wrote it. That statement applies equally to
+the copy vendored here.
+
+If you are the author of that fix, please open an issue and you will be credited.
+
+## 2. Third-party code inside the vendored tree
+
+| Path | What | Licence | Provenance |
+|---|---|---|---|
+| `vendor/d2r-mobile/dm/gfx/nvn/include/nvn.h` | NVN (console graphics API) declarations | MIT, Copyright (c) 2020 h1k421 — notice intact in the file header | as recorded by upstream |
+
+Other third-party components upstream ships (`bcdec`, `flip`, `libdeflate`, the
+Ryujinx shader translation libraries) live under `dm/third_party/` and are **not**
+vendored here; they are build-time dependencies of the runtime and of the
+offline shader toolchain. Upstream's `dm/third_party/README.md` documents each
+one's version and licence.
+
+## 3. Fact tables carried from upstream
+
+These files are derived from the game in the sense that they describe it, but
+they contain no game content — no code, no art, no audio, no text, no shaders.
+Upstream's own `docs/DERIVED.md` makes this distinction and this repository
+follows it:
+
+`shader_map.tsv`, `shader_facts.tsv`, `pso_manifest.tsv`, `names.txt`,
+`nvn_slots.tsv`, `c1_full.tsv`, `bf_want.tsv`, `dmsh_chain.h`, `nvn_count.h`,
+`dm/data/casc_overlay/borrowed_paths.tsv`,
+`dm/ios/tools/touchrectv1_patch.json`.
+
+They record identifiers, checksums, interface shapes and path names. They cannot
+be regenerated without the game, which is why they are carried.
+
+## 4. Not present, and must never be committed
+
+- The game program, or any part of it.
+- NSP / XCI / NCA / NSO / prod.keys or any key material.
+- Shaders, textures, audio, cinematics, text tables or saves.
+- Anything generated from a user's own game files:
+  `dm_hud_exp.h`, `dm_vault_tab.h`, `dm_bright_levels.inc`, the startup prefetch
+  list, and the `derived.tsv` sidecar.
+- The seed save for the shared stash.
+
+`docs/scripts/leakcheck.py` mechanically checks for the classes it can check.
+
+## 5. Game version
+
+All `main+0x…` addresses and every rewrite rule in this tree are valid for one
+game build only: Switch release **1.0.34.0** (PC version string **3.3.94012**),
+with the Reign of the Warlock expansion. Other versions require their own rule
+tables, keyed by the build ID of the main program.
+
+This project ships no game files. You must own the game and produce the files
+yourself.

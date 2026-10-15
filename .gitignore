@@ -1,16 +1,36 @@
-.gradle/
+# Build outputs and generated-from-game-files material.
+# Nothing here may be committed: see NOTICE section 4.
 build/
+out/
+derived.tsv
+dm_hud_exp.h
+dm_vault_tab.h
+dm_bright_levels.inc
+dm_touch_native_art.c
+bootlist_*.tsv
+stash_seed.h
+
+# Game files and keys — never accepted.
+*.nsp
+*.xci
+*.nca
+*.nro
+*.nso
+*.keys
+prod.keys
+romfs/
+game-files/
+saves/
+
+# Toolchain scratch.
+.gradle/
 .cxx/
 local.properties
 *.apk
 *.aab
 *.so
-game-files/
-romfs/
-romfs-*
-prod.keys
-*.xci
-*.nsp
+*.o
+*.a
 secrets/
 *.keystore
 *.jks

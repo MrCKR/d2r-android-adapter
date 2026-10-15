@@ -2,7 +2,12 @@
 
 Diablo II: Resurrected Switch 版本在 Android 上的游戏适配器，运行于 [`switch-android-runtime`](https://github.com/MrCKR/switch-android-runtime) 之上。
 
-> 当前状态：**方案验证/适配分析阶段，尚未提供 APK 或可运行构建**。
+> 当前状态：**适配层代码已迁入并通过独立编译；尚未提供 APK 或可运行构建**。
+>
+> - D2R 专用源码已从上游迁入 `vendor/d2r-mobile/`（250 文件 / 6.0 MB，钉在 `9de307e`）；
+> - 39 个 D2R 功能模块可在**没有 runtime** 的情况下独立编译通过（`docs/scripts/build-adapter.sh`）；
+> - 与 runtime 的接口面已实测收敛为 **50 个符号**，见 [docs/CONTRACT.md](docs/CONTRACT.md)；
+> - 迁移范围与取舍见 [docs/MIGRATION-1.md](docs/MIGRATION-1.md)，所有数字的复现方式见 [docs/MEASURED.md](docs/MEASURED.md)。
 
 ## 目标
 
@@ -53,20 +58,33 @@ Android 上运行 D2R Switch 版的实验性移植
 
 ### A. 上游分析和版本固定
 
-- [ ] 固定上游 D2R Mobile 的参考提交；
-- [ ] 记录目标 Switch 游戏版本；
+- [x] 固定上游 D2R Mobile 的参考提交（`9de307e`，见 `vendor/MANIFEST.tsv`）；
+- [x] 记录目标 Switch 游戏版本（发布版 1.0.34.0 / PC 版本号 3.3.94012，含 Reign of the Warlock）；
+- [x] 建立不含游戏内容的版本指纹和元数据格式；
 - [ ] 列出 Apple/Metal 实现与 Android/Vulkan 实现的对应关系；
-- [ ] 建立不含游戏内容的版本指纹和元数据格式；
-- [ ] 明确所有必须重新实现的 iOS/macOS 专用部分。
+- [x] 明确所有必须重新实现的 iOS/macOS 专用部分（见 `docs/MIGRATION-1.md` 的排除清单）。
+
+### A2. 适配层迁入（`vendor/d2r-mobile/`）
+
+- [x] D2R 功能模块 39 个（`dm/host/dm_*.c`）迁入并通过独立编译；
+- [x] NVN 事实表与 shader 翻译工具链迁入；
+- [x] 改写器 `patch_nso.py` 与 `dm/verify` 回归套件迁入；
+- [x] 触屏层核心 C 移植迁入（Apple 前端排除）；
+- [x] i18n 表与闸门脚本迁入；
+- [x] 数据边界机械检查通过（`docs/scripts/leakcheck.py`）；
+- [x] 与 runtime 的接口面实测并写成契约（`docs/CONTRACT.md`）；
+- [ ] 从 runtime 取回 `diag.c` 里的 10 个 D2R 符号（见契约第 2 节，需 runtime 先能脱离 `diag.c` 启动）；
+- [ ] 与 runtime 协商 `svc` 宿主调用号区间（契约第 4 节，六个号目前归 adapter）；
+- [ ] runtime 侧补 `CC_SHA1`、`arc4random_uniform`、`clock_gettime_nsec_np`、`st_mtimespec`（契约第 6 节）。
 
 ### B. D2R Adapter SDK 接入
 
 - [ ] 实现 Adapter manifest；
-- [ ] 实现游戏版本检测；
+- [ ] 实现游戏版本检测（改写器 `patch_nso.py` 已按 build ID 键控规则表）；
+- [x] 接入模块 patch/relocation 描述（改写器与 `dm/verify` 已迁入，可在沙箱内跑）；
 - [ ] 实现启动配置和资源挂载；
-- [ ] 接入模块 patch/relocation 描述；
 - [ ] 接入 D2R 的服务扩展表；
-- [ ] 接入 D2R 图形 profile 和 Shader 清单。
+- [ ] 接入 D2R 图形 profile 和 Shader 清单（事实表已迁入，后端等 runtime 的 Vulkan 层）。
 
 ### C. 最小启动闭环
 
@@ -117,7 +135,9 @@ Android 上运行 D2R Switch 版的实验性移植
 - 游戏 Shader、音频、贴图、文本和存档；
 - 任何账号、Token、签名证书或私钥。
 
-只提交工具、接口、版本指纹、补丁描述和由合法用户在本地生成的构建产物规则。请同时遵守上游项目许可证以及游戏发行商的相关条款。
+只提交工具、接口、版本指纹、补丁描述和由合法用户在本地生成的构建产物规则。
+
+本仓库包含来自上游 `d2r-mobile` 的衍生材料（MIT），第三方归属与几个需要如实说明的来源问题见 [NOTICE](NOTICE)。其中一条值得单独提：`patch_nso.py` 里 7 条离线补丁规则上游注明取自社区的 LFS Mod Offline Fix、作者不可考，这一来源说明同样适用于本仓库的副本。
 
 ## 相关项目
 
