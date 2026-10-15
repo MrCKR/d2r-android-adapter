@@ -13,18 +13,28 @@
 #
 # Whatever remains undefined after this IS the runtime contract.
 set -u
-R=/tmp/adapter-work
+R=$(cd "$(dirname "$0")/../.." && pwd)
 V=$R/vendor/d2r-mobile
 IF=$V/interface
-INC=${INC:-/tmp/d2r-shiminc}
-OUT=${OUT:-/tmp/d2r-build}
+INC=${INC:-${TMPDIR:-/tmp}/d2r-shiminc}
+OUT=${OUT:-${TMPDIR:-/tmp}/d2r-build}
 rm -rf "$OUT"; mkdir -p "$OUT/obj" "$INC/mach" "$INC/CommonCrypto"
-GEN=${GEN:-/tmp/d2r-genstub}
+GEN=${GEN:-${TMPDIR:-/tmp}/d2r-genstub}
 sh "$(dirname "$0")/gen-standins.sh" "$GEN" >/dev/null
 cp "$GEN/sha1_shim.h" "$INC/"
 
-cp /tmp/rt/runtime/compat/darwin/mach/mach.h "$INC/mach/mach.h"
-cp /tmp/rt/runtime/compat/darwin/CommonCrypto/CommonDigest.h "$INC/CommonCrypto/CommonDigest.h"
+# The runtime's Darwin compat layer, if it is checked out next to this repo.
+# Only mach.h and CommonDigest.h are needed to compile the adapter on a glibc
+# host; without them the Darwin-only files are the ones that fail.
+RT=${DM_RUNTIME:-$(dirname "$0")/../../../switch-android-runtime}
+if [ -d "$RT/runtime/compat/darwin" ]; then
+  cp "$RT/runtime/compat/darwin/mach/mach.h" "$INC/mach/mach.h"
+  cp "$RT/runtime/compat/darwin/CommonCrypto/CommonDigest.h" "$INC/CommonCrypto/CommonDigest.h"
+else
+  echo "note: runtime compat layer not found at $RT (DM_RUNTIME to override);" >&2
+  echo "      the Darwin-only translation units will not compile." >&2
+  touch "$INC/mach/mach.h" "$INC/CommonCrypto/CommonDigest.h"
+fi
 cat > "$INC/TargetConditionals.h" <<'EOF'
 #ifndef D2R_TC_H
 #define D2R_TC_H
