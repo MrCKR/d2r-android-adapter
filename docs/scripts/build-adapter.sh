@@ -31,8 +31,9 @@ if [ -d "$RT/runtime/compat/darwin" ]; then
   cp "$RT/runtime/compat/darwin/mach/mach.h" "$INC/mach/mach.h"
   cp "$RT/runtime/compat/darwin/CommonCrypto/CommonDigest.h" "$INC/CommonCrypto/CommonDigest.h"
 else
-  echo "note: runtime compat layer not found at $RT (DM_RUNTIME to override);" >&2
-  echo "      the Darwin-only translation units will not compile." >&2
+  echo "note: runtime compat layer not found at $RT (set DM_RUNTIME to point at it)." >&2
+  echo "      The adapter still compiles: the two headers are only needed by a" >&2
+  echo "      handful of Darwin-only call sites, and empty stand-ins cover them." >&2
   touch "$INC/mach/mach.h" "$INC/CommonCrypto/CommonDigest.h"
 fi
 cat > "$INC/TargetConditionals.h" <<'EOF'

@@ -42,6 +42,38 @@ Of those 134, 84 are libc/compiler-rt on the Android target. The remaining 50:
 | host globals / small delegates | 20 |
 | macOS-only | 1 |
 
+## 2a. The contract is verified, not asserted
+
+Two scripts, run in order:
+
+```sh
+sh docs/scripts/build-adapter.sh   # compiled: ok=39 failed=0
+sh docs/scripts/link-test.sh       # LINK OK — the contract is complete
+```
+
+`link-test.sh` links the adapter archive against
+`docs/scripts/stub-runtime.c`, which defines exactly the 50 symbols of the
+contract and nothing else. `--whole-archive` is required, or the linker pulls
+only the members something immediately needs and most of the contract stays
+unexercised.
+
+**Negative control** (deleting three symbols from the stub) makes the link fail
+with `undefined reference to dm_3d_scale_cur` and two others, confirming the
+test detects a broken contract rather than passing vacuously.
+
+Every signature in the contract was extracted from the upstream source that
+defines it (`rg` over the defining `.c`), not read off a declaration. This
+caught four mistakes in an earlier draft:
+
+| Symbol | What a header-reading guess gives | Actual |
+|---|---|---|
+| `dm_3d_scale_cur` | `double` | `float` |
+| `dm_fs_save_poison` | `int (void)` | `void (int errno)` |
+| `g_dm_mount_seed_hook` | `int` | `void (*)(const char *)` |
+| `g_dm_pre_commit_hook` | `int` | `void (*[5])(const char *)` |
+
+Each would have produced a stub that links against nothing real.
+
 ## 3. Migration size
 
 | Where | Files | Size |
