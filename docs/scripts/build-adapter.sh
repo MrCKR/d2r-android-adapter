@@ -30,6 +30,10 @@ RT=${DM_RUNTIME:-$(dirname "$0")/../../../switch-android-runtime}
 if [ -d "$RT/runtime/compat/darwin" ]; then
   cp "$RT/runtime/compat/darwin/mach/mach.h" "$INC/mach/mach.h"
   cp "$RT/runtime/compat/darwin/CommonCrypto/CommonDigest.h" "$INC/CommonCrypto/CommonDigest.h"
+  # dm_padmode.c includes CommonDigestSHA1.h directly; the runtime ships it, so
+  # take it along instead of leaving that one file uncompilable.
+  [ -f "$RT/runtime/compat/darwin/CommonCrypto/CommonDigestSHA1.h" ] && \
+    cp "$RT/runtime/compat/darwin/CommonCrypto/CommonDigestSHA1.h" "$INC/CommonCrypto/CommonDigestSHA1.h"
 else
   echo "note: runtime compat layer not found at $RT (set DM_RUNTIME to point at it)." >&2
   echo "      The adapter still compiles: the two headers are only needed by a" >&2
